@@ -25,15 +25,23 @@ export default class ProductList extends Component{
         
     }
     fetchData = async () => {
-        const response = await fetch("https://shopwatchdut.herokuapp.com/api/product/")
-        const json = await response.json()
-        if (this.props.category==="men") {
-            this.setState({ data: json.data.filter(item => item.sex !== false) });
+        
+        await fetch("https://shopwatchdut.herokuapp.com/api/product/", {
+            method: "GET",
         }
-        else if (this.props.category==="women"){
-            this.setState({ data: json.data.filter(item => item.sex !== true) });
-        }
-        else this.setState({data: json.data}) 
+        ).then((response) => response.json())
+            .then((responseData) => {
+                if (this.props.category==="men") {
+                    this.setState({ data: responseData.data.filter(item => item.sex !== false) });
+                }
+                else if (this.props.category==="women"){
+                    this.setState({ data: responseData.data.filter(item => item.sex !== true) });
+                }
+                else this.setState({data: responseData.data}) 
+            }).catch((error) => {
+                throw error;
+            });
+        
     }
     componentDidMount() {
         this.fetchData();
@@ -55,7 +63,7 @@ export default class ProductList extends Component{
                                 <View style={styles.frameImage}>                                
                                     <Image source={{uri:item.image}} style={styles.productImg}></Image>
                                     <Text style={styles.text}> {item.name}</Text>
-                                    <View style={{justifyContent:"flex-end", flex:1}}><Text style={styles.price}>{item.price}</Text></View>                                    
+                                    <View style={{justifyContent:"flex-end", flex:1}}><Text style={styles.price}>{item.price}$</Text></View>                                    
                                 </View>                            
                             </View>
                         </TouchableOpacity>         
@@ -96,9 +104,11 @@ const styles = StyleSheet.create({
         shadowOpacity: 1,
     },
     text: {
-        marginTop: '10%'
+        marginTop: '10%',
+        marginLeft:"3%"
     },
     price: {
         color:'red',
+        marginLeft:"3%"
     }
 })

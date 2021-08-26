@@ -1,15 +1,19 @@
-import React, {Component} from 'react';
-import {View, Text, StyleSheet, Modal, Dimensions, TextInput, TouchableOpacity, FlatList, Image} from 'react-native';
+import React, { Component } from 'react';
+import { View, Text, StyleSheet, Alert, Modal, Dimensions, TextInput, TouchableOpacity, FlatList, Image } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-const {width, height} = Dimensions.get('window');
+import AsyncStorage from "@react-native-async-storage/async-storage"
+const { width, height } = Dimensions.get('window');
 
 
-export default class ChangePass extends Component{
-    constructor(props){
+export default class ChangePass extends Component {
+    constructor(props) {
         super(props);
-        this.state ={
+        this.state = {
             icon: 'eye-slash',
             isShow: true,
+            currentPass: "",
+            newPass: "",
+            confirmPass: "",
         }
     }
     hideShowPassword = () => {
@@ -18,40 +22,102 @@ export default class ChangePass extends Component{
             isShow: !this.state.isShow,
         })
     }
-    render(){
-        return(
+    changeCurrent = (text) => {
+        this.setState({ currentPass: text });
+    };
+    changeNew = (text) => {
+        this.setState({ newPass: text });
+    };
+    changeConfirm = (text) => {
+        this.setState({ confirmPass: text });
+    };
+    create = async () => {
+        var ID = await AsyncStorage.getItem("id_user");
+        console.log("id", ID)
+        var TEMP_TOKEN = await AsyncStorage.getItem("id_token");
+        this.setState({ TOKEN: TEMP_TOKEN })
+        if (this.state.newPass === this.state.confirmPass) {
+            await fetch("https://shopwatchdut.herokuapp.com/api/user/14/changepassword", {
+                method: "PUT",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + TEMP_TOKEN
+                },
+                body: JSON.stringify({
+                    password: this.state.newPass,
+                })
+            }
+            ).then((response) => response.json())
+                .then((responseData) => {
+                    console.log(responseData);
+                    this.setState({ data: responseData.data });
+                    if (responseData.meta.message === "Processed successfully")
+                        this.alert();
+                }).catch((error) => {
+                    console.log(error)
+                    Alert.alert(
+                        "Messages",
+                        "Change password failed",
+                        [
+                            { text: "OK", onPress: () => console.log("OK Pressed") }
+                        ]
+                    )
+                });
+        }
+        else {
+            Alert.alert(
+                "Messages",
+                "Confirm password not true",
+                [
+                    { text: "OK", onPress: () => console.log("OK Pressed") }
+                ]
+            )
+        }
+    }
+    alert = () => {
+        Alert.alert(
+            "Messages",
+            "Update password successfully",
+            [
+                { text: "OK", onPress: () => console.log("OK Pressed") }
+            ]
+        )
+    }
+    render() {
+        return (
             <View style={styles.mainContainer}>
                 <View style={styles.headerPro}>
-                    <View style={{flexDirection:"row", justifyContent:"center", alignItems:"center"}}>
+                    <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
                         <View style={{}}>
                             <Text>Change information</Text>
-                        </View>                                        
-                    </View>    
+                        </View>
+                    </View>
                 </View>
-                <View style={styles.wrapper}>    
+                <View style={styles.wrapper}>
 
                     <View style={styles.inputViewPassword}>
                         <View style={styles.iconUserPassword}>
-                            <FontAwesome5 
+                            <FontAwesome5
                                 name="lock"
                                 color="#05375a"
                                 //size={20}
-                                height= '100%'
-                                position= 'absolute'
-                                alignItems= 'center'
-                                justifyContent= 'center'
+                                height='100%'
+                                position='absolute'
+                                alignItems='center'
+                                justifyContent='center'
                             ></FontAwesome5>
                         </View>
                         <TextInput
                             underlineColorAndroid='#FFF'
-                            onChangeText={this.changeTextPassword}
+                            onChangeText={this.changeCurrent}
                             style={styles.inputText}
                             placeholder="Current Password"
                             placeholderTextColor="#808080"
                             secureTextEntry={this.state.isShow}
                         >
                         </TextInput>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.touchableShowPassword}
                             onPress={this.hideShowPassword}
                         >
@@ -59,19 +125,19 @@ export default class ChangePass extends Component{
                     </View>
                     <View style={styles.inputViewPassword}>
                         <View style={styles.iconUserPassword}>
-                            <FontAwesome5 
+                            <FontAwesome5
                                 name="lock"
                                 color="#05375a"
                                 //size={20}
-                                height= '100%'
-                                position= 'absolute'
-                                alignItems= 'center'
-                                justifyContent= 'center'
+                                height='100%'
+                                position='absolute'
+                                alignItems='center'
+                                justifyContent='center'
                             ></FontAwesome5>
                         </View>
                         <TextInput
                             underlineColorAndroid='#FFF'
-                            onChangeText={this.changeTextPassword}
+                            onChangeText={this.changeNew}
                             style={styles.inputText}
                             placeholder="New Password"
                             placeholderTextColor="#808080"
@@ -81,19 +147,19 @@ export default class ChangePass extends Component{
                     </View>
                     <View style={styles.inputViewPassword}>
                         <View style={styles.iconUserPassword}>
-                            <FontAwesome5 
+                            <FontAwesome5
                                 name="lock"
                                 color="#05375a"
                                 //size={20}
-                                height= '100%'
-                                position= 'absolute'
-                                alignItems= 'center'
-                                justifyContent= 'center'
+                                height='100%'
+                                position='absolute'
+                                alignItems='center'
+                                justifyContent='center'
                             ></FontAwesome5>
                         </View>
                         <TextInput
                             underlineColorAndroid='#FFF'
-                            onChangeText={this.changeTextPassword}
+                            onChangeText={this.changeConfirm}
                             style={styles.inputText}
                             placeholder="Confirm Password"
                             placeholderTextColor="#808080"
@@ -102,12 +168,12 @@ export default class ChangePass extends Component{
                         </TextInput>
                     </View>
                     <View style={styles.btnFrame}>
-                                <TouchableOpacity style={styles.buyBtn}>
-                                            <Text style={styles.Text}>SAVE</Text>
-                                </TouchableOpacity>
-                        </View> 
+                        <TouchableOpacity style={styles.buyBtn} onPress={this.create}>
+                            <Text style={styles.Text}>SAVE</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>    
+            </View>
         )
     }
 }
@@ -118,11 +184,11 @@ const styles = StyleSheet.create({
         color: 'black',
     },
     arrowBtn: {
-        borderLeftColor:"#DEE7EA",
-        borderLeftWidth:0.7, height:"100%", 
-        width:width/10, 
-        justifyContent:"center", 
-        alignItems:"center"
+        borderLeftColor: "#DEE7EA",
+        borderLeftWidth: 0.7, height: "100%",
+        width: width / 10,
+        justifyContent: "center",
+        alignItems: "center"
     },
     container: {
         width: '100%',
@@ -135,15 +201,15 @@ const styles = StyleSheet.create({
         maxHeight: 50,
     },
     mainContainer: {
-        flex:1,
+        flex: 1,
         flexDirection: 'column',
-        elevation:1,
+        elevation: 1,
         alignItems: 'center',
         backgroundColor: '#DEE7EA',
     },
     imageBackground: {
         width: '30%',
-        height: height/24,
+        height: height / 24,
         resizeMode: 'contain',
         flex: 8,
         justifyContent: 'center',
@@ -164,14 +230,14 @@ const styles = StyleSheet.create({
         color: 'black',
         fontSize: 20,
     },
-    headerPro:{
+    headerPro: {
         width: '100%',
-        height: height*0.07,
+        height: height * 0.07,
         backgroundColor: 'white',
         //marginTop: '3%',
         //borderRadius: 10,
         justifyContent: "center",
-        alignContent:"center",
+        alignContent: "center",
         shadowColor: '#2E272B',
         //flexDirection: 'row',
         shadowOffset: {
@@ -182,7 +248,7 @@ const styles = StyleSheet.create({
     },
     wrapper: {
         width: '95%',
-        height: height*0.8,
+        height: height * 0.8,
         backgroundColor: '#DEE7EA',
         //borderRadius: 10,
         paddingTop: '10%',
@@ -240,19 +306,19 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     btnFrame: {
-        width:'100%',
-        borderRadius:40,
-        justifyContent:"center",
-        alignItems:"center",
-        marginTop:"3%",
-    }, 
+        width: '100%',
+        borderRadius: 40,
+        justifyContent: "center",
+        alignItems: "center",
+        marginTop: "3%",
+    },
     buyBtn: {
         width: '40%',
         backgroundColor: '#60ADAD',
         height: 50,
         alignItems: 'center',
         justifyContent: 'center',
-        borderRadius:40,
+        borderRadius: 40,
 
     },
     Text: {

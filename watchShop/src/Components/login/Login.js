@@ -69,6 +69,7 @@ export default class Login extends Component{
             this.setAsyncStorage(STORAGE_KEY,responseData.token)
             this.setIdUser(STORAGE_ID,responseData.data)
             if (responseData.token!= null) this.props.navigation.navigate("Main");
+            else this.showAlert();
         }).catch((error) => {
             console.log("Error");
             this.showAlert();

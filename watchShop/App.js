@@ -7,10 +7,10 @@
  */
 
 import React, { Component } from 'react';
-import {AppRegistry, Navigator, View} from 'react-native';
+import {AppRegistry, Navigator, View,LogBox} from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, TransitionPresets, CardStyleInterpolators } from '@react-navigation/stack';
-import {store} from './src/redux/store/store';
+import store from './src/redux/store/store';
 import {Provider} from "react-redux";
 //import {Login, Main} from './Components/Index';
 
@@ -28,11 +28,14 @@ import ChangeInfor from './src/Components/ChangeInfor/ChangeInfor.js';
 import OrderDetail from './src/Components/Order/OrderDetail.js';
 import Register from './src/Components/Register/Register';
 import ChangePass from './src/Components/ChangeInfor/ChangePass.js';
+import Profile from './src/Components/Profile/Profile.js';
+import Order from './src/Components/Order/Order';
+import Result from './src/Components/Search/Result';
 const Stack = createStackNavigator();
 
 export default class WatchShop extends Component {
- 
   render() {
+    LogBox.ignoreAllLogs();
     return (
       <Provider store={store}>
         <NavigationContainer>
@@ -59,6 +62,9 @@ export default class WatchShop extends Component {
             <Stack.Screen name="ChangePass" component={ChangePass}/>
             <Stack.Screen name="Men" component={Men}/>
             <Stack.Screen name="Women" component={Women}/>
+            <Stack.Screen name="Profile" component={Profile}/>
+            <Stack.Screen name="Order" component={Order}/>
+            <Stack.Screen name="Result" component={Result}/>
           </Stack.Navigator>
         </NavigationContainer>
       </Provider>

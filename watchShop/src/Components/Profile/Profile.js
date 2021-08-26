@@ -1,24 +1,30 @@
 import React, {Component} from 'react';
-import {View, Text, StyleSheet, ImageBackground, Dimensions, TextInput, TouchableOpacity, FlatList, Image} from 'react-native';
+import {View,Alert, Text, StyleSheet, ImageBackground, Dimensions, TextInput, TouchableOpacity, FlatList, Image} from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import Moment from "moment";
+import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons'
+
 const {width, height} = Dimensions.get('window')
 
 
-export default class Profile extends Component{
+class Profile extends Component{
     constructor(props) {
         super(props);
         this.state = {
             data:{},
+            TOKEN:"",
         };   
     };
     fetchData = async () => {
-
+        var ID = await AsyncStorage.getItem("id_user");
         var TEMP_TOKEN = await AsyncStorage.getItem("id_token");
-        fetch("https://shopwatchdut.herokuapp.com/api/user/", {
+        this.setState({TOKEN: TEMP_TOKEN})
+        await fetch("https://shopwatchdut.herokuapp.com/api/user/id?id="+ID, {
             method:"GET",
             headers: {
-                'Authorization': 'Bearer ' + TEMP_TOKEN
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + this.state.TOKEN
               },
         }
         ).then((response) => response.json())
@@ -26,28 +32,44 @@ export default class Profile extends Component{
             console.log(responseData);
             this.setState({data: responseData.data});
         }).catch((error) => {
-            console.log("Error");
+            console.log("Error"+error);
+            console.log("token", this.state.TOKEN);
+            console.log("id",ID);
         });
     }
     componentDidMount() {
         this.fetchData();
     }
+
+    componentWillUnmount(){
+        this.fetchData();
+      }
     gotochange = () => {
         this.props.navigation.navigate("ChangeInfor");
     }
     gotoPass = () => {
         this.props.navigation.navigate("ChangePass");
     }
+    Logout = async () => {
+        try {
+            await AsyncStorage.removeItem("id_token");
+            await AsyncStorage.removeItem("id_user");
+            this.props.navigation.navigate("Login");   
+        } catch (error) {
+        console.log('AsyncStorage error: ' + error.message);
+        }
+    }
     render(){
         console.log(this.state.data)
         return(
             <View style={styles.mainContainer}>
                 <View style={styles.container}>
-                    <TouchableOpacity style={styles.bars} onPress={() => {openDrawer(this.props.navigation)}}>
-                        <FontAwesome5 style={styles.iconbars} name={'bars'}/>
-                    </TouchableOpacity>
-                    <Image source={require('../../assets/image/watchshop_logodesigns_final.jpg')} style={styles.imageBackground}>
+                <Image source={require('../../assets/image/watchshop_logodesigns_final.jpg')} style={styles.imageBackground}>
                     </Image>
+                    <TouchableOpacity style={styles.bars} onPress={this.Logout}>
+                        <SimpleLineIcons name="logout" style={styles.iconbars}></SimpleLineIcons>
+                        <Text>Log-out</Text>
+                    </TouchableOpacity>
                 </View>
                 <View style={styles.headerPro}>
                     <View style={{flexDirection:"row", justifyContent:"center", alignItems:"center"}}>
@@ -61,9 +83,9 @@ export default class Profile extends Component{
                         <Image source={require('../../assets/image/avt.png')} style={styles.avtImage}></Image>              
                     </View>       
                         <View style={styles.inforBar}>
-                            <View style={{flexDirection:"row", height:"100%", justifyContent:"center", alignItems:"center"}}>
-                                <Text>Name:</Text>
-                                <Text style={{}}>{this.state.data.name} </Text>
+                            <View style={styles.textField}>
+                                <Text>Name: </Text>
+                                <Text style={{fontStyle: "italic", marginLeft:"2%"}}>{this.state.data.fullname} </Text>
                                 <View style={{flex:1,justifyContent:"flex-end", flexDirection:"row"}}>  
                                 </View>
                                 <View style={styles.arrowBtn}></View>
@@ -72,8 +94,9 @@ export default class Profile extends Component{
                         </View>
                         
                         <View style={styles.inforBar}>
-                            <View style={{flexDirection:"row", height:"100%", justifyContent:"center", alignItems:"center"}}>
-                                <Text>Address:</Text>
+                            <View style={styles.textField}>
+                                <Text>Address: </Text>
+                                <Text style={{fontStyle: "italic", marginLeft:"2%"}}>{this.state.data.address} </Text>
                                 <View style={{flex:1,justifyContent:"flex-end", flexDirection:"row"}}>  
                                 </View>
                                 <View style={styles.arrowBtn}></View>
@@ -81,16 +104,18 @@ export default class Profile extends Component{
                             
                         </View>
                         <View style={styles.inforBar1}>  
-                            <View style={{flexDirection:"row", height:"100%", justifyContent:"center", alignItems:"center"}}>
-                                <Text>Phone number</Text>
+                            <View style={styles.textField}>
+                                <Text>Phone number: </Text>
+                                <Text style={{fontStyle: "italic", marginLeft:"2%"}}>{this.state.data.phone} </Text>
                                 <View style={{flex:1,justifyContent:"flex-end", flexDirection:"row"}}>  
                                 </View>
                                 <View style={styles.arrowBtn}></View>
                             </View>
                         </View>
                         <View style={styles.inforBar}>
-                            <View style={{flexDirection:"row", height:"100%", justifyContent:"center", alignItems:"center"}}>
-                                <Text>Email</Text>
+                            <View style={styles.textField}>
+                                <Text>Email: </Text>
+                                <Text style={{fontStyle: "italic", marginLeft:"2%"}}>{this.state.data.email} </Text>
                                 <View style={{flex:1,justifyContent:"flex-end", flexDirection:"row"}}>  
                                 </View>
                                 <View style={styles.arrowBtn}></View>
@@ -98,17 +123,10 @@ export default class Profile extends Component{
                             
                         </View>
                         <View style={styles.inforBar}>
-                            <View style={{flexDirection:"row", height:"100%", justifyContent:"center", alignItems:"center"}}>
-                                <Text>Gender</Text>
-                                <View style={{flex:1,justifyContent:"flex-end", flexDirection:"row"}}>  
-                                </View>
-                                <View style={styles.arrowBtn}></View>
-                            </View>
-                        </View>
-                        <View style={styles.inforBar}>
                             
-                            <View style={{flexDirection:"row", height:"100%", justifyContent:"center", alignItems:"center"}}>
-                                <Text>Date of birth</Text>
+                            <View style={styles.textField}>
+                                <Text>Date of birth: </Text>
+                                <Text style={{fontStyle: "italic", marginLeft:"2%"}}>{Moment(this.state.data.birthday).format('DD/MM/YYYY')} </Text>
                                 <View style={{flex:1,justifyContent:"flex-end", flexDirection:"row"}}>  
                                 </View>
                                 <View style={styles.arrowBtn}></View>
@@ -133,6 +151,8 @@ export default class Profile extends Component{
         )
     }
 }
+
+export default Profile
 const styles = StyleSheet.create({
     arrowBtn: {
         borderLeftColor:"#DEE7EA",
@@ -257,5 +277,36 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom:"2%",
+    },
+    textField: {
+        flexDirection:"row", 
+        height:"100%", 
+        justifyContent:"center", 
+        alignItems:"center", 
+        marginHorizontal:"3%"
+    },
+    imageBackground: {
+        width: '30%',
+        height: '60%',
+        resizeMode: 'contain',
+        flex: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        maxWidth: '100%',
+        marginLeft: "15%",
+    },
+    bars: {
+        
+        // marginRight: '70%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 25,
+        width: "15%",
+        height: "100%",
+        marginTop:"2%"
+    },
+    iconbars: {
+        color: 'black',
+        fontSize: 22,
     },
 })

@@ -1,30 +1,48 @@
 import React, {Component} from 'react';
 import {View, Text, StyleSheet, ImageBackground, Dimensions, TextInput, TouchableOpacity, FlatList, Image} from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import AsyncStorage from "@react-native-async-storage/async-storage"
 const {width} = Dimensions.get('window');
 export default class OrderDetail extends Component{
     constructor(props) {
         super(props);
-        
         this.state = {
             data: [
-                // {id: 1, name: 'Đồng hồ thụy sĩ',image: require('../../assets/productImage/watch1.jpg')},
-                // {id: 2, name: 'Đồng hồ Đức', image: require('../../assets/productImage/watch2.jpg')},
-                // {id: 3, name: 'Đồng hồ 3', image: require('../../assets/productImage/watch3.jpg')},
-                // {id: 4, name: 'Đồng hồ 3', image: require('../../assets/productImage/watch3.jpg')},
             ],
-
+            totalPrice:"",
         };
     }
     fetchData = async () => {
         const id = this.props.route.params.id;
         const response = await fetch("https://shopwatchdut.herokuapp.com/api/order/"+id)
+        .catch((error) => {
+            console.log("Error",error);
+        })
         const json = await response.json()
         this.setState({data: json.data});
         
     }
+    getTotalPrice = async () => {
+        var ID = await AsyncStorage.getItem("id_user");
+        const id = this.props.route.params.id;
+        var TEMP_TOKEN = await AsyncStorage.getItem("id_token");
+        fetch(`https://shopwatchdut.herokuapp.com/api/order/${id}/price`, {
+            method: "GET",
+            headers: {
+                'Authorization': 'Bearer ' + TEMP_TOKEN
+            },
+        }
+        ).then((response) => response.json())
+            .then((responseData) => {
+                console.log(responseData);
+                this.setState({ totalPrice: responseData.data });
+            }).catch((error) => {
+                console.log("Error"+error);
+            });
+    }
     componentDidMount() {
         this.fetchData();
+        this.getTotalPrice();
     }
 
     render(){
@@ -56,15 +74,15 @@ export default class OrderDetail extends Component{
                             renderItem = {({item}) => ( 
                                     <View style={{}}>
                                         <View style={styles.frameImage}>
-                                            <Image source={item.image} style={styles.productImg}></Image>
+                                            <Image source={{uri:item.itemOrder.image}} style={styles.productImg}></Image>
                                             <View style={styles.Info}>
                                                 <Text style={styles.text}> {item.itemOrder.name}</Text>
-                                                <View style={{ flexDirection: 'row',}}>
-                                                    <Text>Price:</Text>
+                                                <View style={{ flexDirection: 'row',marginLeft:"3%"}}>
+                                                    <Text>Price: </Text>
                                                     <Text>{item.itemOrder.price} </Text>
                                                 </View>
-                                                <View style={{ flexDirection: 'row',}}>
-                                                    <Text>Quantity:</Text>
+                                                <View style={{ flexDirection: 'row',marginLeft:"3%"}}>
+                                                    <Text>Quantity: </Text>
                                                     <Text>{item.quantity}</Text>
                                                 </View>                                                                                            
                                             </View> 
@@ -75,6 +93,7 @@ export default class OrderDetail extends Component{
                     />
                      <View style={styles.btnFrame}> 
                             <Text style={styles.buyBtn} >Total Price: </Text>
+                            <Text style={{color:"red"}}>{this.state.totalPrice}$</Text>
                     </View>
                     </View>
                     
@@ -137,15 +156,11 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems:"center",
         shadowColor: '#2E272B',
-        //flexDirection: 'row',
         shadowOffset: {
             width: 2,
             height: 6
         },
         shadowOpacity: 1,
-    },
-    trash: {
-        
     },
     wrapper: {
         width: '95%',
@@ -154,7 +169,6 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginTop: '3%',
         justifyContent: "center", 
-        //alignItems: "center",
     },
     frameImage: {
         flex:1,
@@ -185,7 +199,6 @@ const styles = StyleSheet.create({
         
     },
     text: {
-        //marginTop: "2%",
         fontWeight: 'bold',
         textTransform:"uppercase",
         width: "90%",
@@ -205,21 +218,15 @@ const styles = StyleSheet.create({
     },
     btnFrame: {
         width:'100%',
-        //height: '50%',
-        //flex:1,
         flexDirection: 'row',
         borderBottomLeftRadius: 10,
         borderBottomRightRadius: 10,
         borderTopWidth:0.3,
     }, 
     buyBtn: {
-        width: '30%',  
-        //borderRadius: 7,
         height: 50,
         alignItems: 'center',
         justifyContent: 'center',
-        //marginLeft: '70%',
-
     },
 })
 

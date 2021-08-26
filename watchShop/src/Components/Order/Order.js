@@ -1,7 +1,9 @@
 import React, {Component} from 'react';
 import {View, Text, StyleSheet, ImageBackground, Dimensions, TextInput, TouchableOpacity, FlatList, Image} from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import AsyncStorage from "@react-native-async-storage/async-storage"
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import HeaderShop from "../Main/HeaderShop"
+import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons'
 const {width} = Dimensions.get('window');
 
 export default class Order extends Component{
@@ -9,16 +11,13 @@ export default class Order extends Component{
         super(props);
         
         this.state = {
-            data: [
-                // {id: 1, name: 'Đồng hồ thụy sĩ',image: require('../../assets/productImage/watch1.jpg')},
-                // {id: 2, name: 'Đồng hồ Đức', image: require('../../assets/productImage/watch2.jpg')},
-            ],
+            data: []
         };
     }
     fetchData = async () => {
-
         var TEMP_TOKEN = await AsyncStorage.getItem("id_token");
-        fetch("https://shopwatchdut.herokuapp.com/api/order/user/1", {
+        var ID = await AsyncStorage.getItem("id_user");
+        fetch("https://shopwatchdut.herokuapp.com/api/order/user/"+ID, {
             method:"GET",
             headers: {
                 'Authorization': 'Bearer ' + TEMP_TOKEN
@@ -39,15 +38,25 @@ export default class Order extends Component{
     gotoDetail = (idOrder) => {
         this.props.navigation.navigate("OrderDetail", {id: idOrder});
     }
+    Logout = async () => {
+        try {
+            await AsyncStorage.removeItem("id_token");
+            await AsyncStorage.removeItem("id_user");
+            this.props.navigation.navigate("Login");   
+        } catch (error) {
+        console.log('AsyncStorage error: ' + error.message);
+        }
+    }
     render(){
         return(
             <View style={styles.mainContainer}>
                 <View style={styles.container}>
-                    <TouchableOpacity style={styles.bars} onPress={() => {openDrawer(this.props.navigation)}}>
-                        <FontAwesome5 style={styles.iconbars} name={'bars'}/>
-                    </TouchableOpacity>
-                    <Image source={require('../../assets/image/watchshop_logodesigns_final.jpg')} style={styles.imageBackground}>
+                <Image source={require('../../assets/image/watchshop_logodesigns_final.jpg')} style={styles.imageBackground}>
                     </Image>
+                    <TouchableOpacity style={styles.bars} onPress={this.Logout}>
+                        <SimpleLineIcons name="logout" style={styles.iconbars}></SimpleLineIcons>
+                        <Text>Log-out</Text>
+                    </TouchableOpacity>
                 </View> 
                 <View style={styles.headerCart}>
                     <View style={{flexDirection:"row", justifyContent:"center", alignItems:"center"}}>
@@ -81,10 +90,7 @@ export default class Order extends Component{
                                                     <Text>Note:</Text>
                                                     <Text>{item.note}</Text>
                                                 </View>  
-                                                <View style={{flexDirection:"row"}}>
-                                                    <Text>Total price:</Text>
-                                                    <Text></Text>
-                                                </View>     
+                
                                             </View>
                                             
                                             <View style={styles.btnFrame}>
@@ -202,5 +208,29 @@ const styles = StyleSheet.create({
         height: 25,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    imageBackground: {
+        width: '30%',
+        height: '60%',
+        resizeMode: 'contain',
+        flex: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        maxWidth: '100%',
+        marginLeft: "15%",
+    },
+    bars: {
+        
+        // marginRight: '70%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 25,
+        width: "15%",
+        height: "100%",
+        marginTop:"2%"
+    },
+    iconbars: {
+        color: 'black',
+        fontSize: 22,
     },
 })
